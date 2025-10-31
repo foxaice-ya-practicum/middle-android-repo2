@@ -1,6 +1,8 @@
 package ru.yandex.praktikumchatapp
 
 import app.cash.turbine.test
+import junit.framework.TestCase.assertEquals
+import junit.framework.TestCase.assertTrue
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flow
@@ -13,9 +15,7 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.mockito.Mockito.mock
-import org.mockito.Mockito.times
 import org.mockito.Mockito.`when`
-import org.mockito.kotlin.verify
 import ru.yandex.praktikumchatapp.data.ChatApi
 import ru.yandex.praktikumchatapp.data.ChatRepository
 
@@ -39,7 +39,15 @@ class ChatRepositoryTest {
 
     @Test
     fun `getReplyMessage should return a non-empty string`() = runTest {
-        // TODO Задание 2: напишите юнит-тест
+        val expectedMessage = "message"
+        `when`(chatApi.getReply()).thenReturn(flow { emit(expectedMessage) })
+
+        chatRepository.getReplyMessage().test {
+            val awaitItem = awaitItem()
+            assertTrue(awaitItem.isNotEmpty())
+            assertEquals(expectedMessage, awaitItem)
+            cancelAndIgnoreRemainingEvents()
+        }
     }
 
     @Test

@@ -1,11 +1,15 @@
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.joinAll
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.After
+import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
 import ru.yandex.praktikumchatapp.presentation.ChatViewModel
@@ -32,14 +36,25 @@ class ChatViewModelTest {
     @Test
     fun `send message should update state with MyMessage`() = runTest {
         val message = Message.MyMessage("TestMessage")
-
-        // TODO Задание 5: допишите юнит-тест
+        viewModel.sendMyMessage(message.text)
+        assertEquals(message, viewModel.chatState.value.messages.first())
     }
 
     @Test
     fun testReceiveMessage_concurrentMessages() = runTest {
-        val messagesToSend = (1..100).map { Message.MyMessage("Message $it") }
+        val messagesToSend = (1..MESSAGE_COUNT).map { Message.MyMessage("Message $it") }
+        coroutineScope {
+            messagesToSend.map { message ->
+                launch { viewModel.sendMyMessage(message.text) }
+            }.joinAll()
+        }
 
-        // TODO Задание 6: допишите юнит-тест
+        val resultMessages = viewModel.chatState.value.messages
+        assertEquals(MESSAGE_COUNT, resultMessages.size)
+        assertEquals(messagesToSend, resultMessages)
+    }
+
+    private companion object {
+        const val MESSAGE_COUNT = 100
     }
 }
