@@ -29,6 +29,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -81,12 +82,12 @@ fun ChatScreen(
     modifier: Modifier = Modifier
 ) {
     val viewModel = remember { ChatViewModel() }
-    val state = viewModel.chatState.collectAsStateWithLifecycle()
+    val state by viewModel.chatState.collectAsStateWithLifecycle()
     val messageText = remember { mutableStateOf("") }
     val focusRequester = remember { FocusRequester() }
 
-    LaunchedEffect(state.value.shouldShowKeyboard) {
-        if (state.value.shouldShowKeyboard) {
+    LaunchedEffect(state.shouldShowKeyboard) {
+        if (state.shouldShowKeyboard) {
             focusRequester.requestFocus()
         }
     }
@@ -99,7 +100,7 @@ fun ChatScreen(
                 .weight(1f)
                 .padding(start = 16.dp, end = 16.dp, top = 16.dp)
         ) {
-            items(state.value.messages) { message ->
+            items(state.messages) { message ->
                 when (message) {
                     is Message.MyMessage -> MyMessageCard(message)
                     is Message.OtherMessage -> OtherMessageCard(message)
