@@ -1,3 +1,4 @@
+import app.cash.turbine.test
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.coroutineScope
@@ -37,7 +38,9 @@ class ChatViewModelTest {
     fun `send message should update state with MyMessage`() = runTest {
         val message = Message.MyMessage("TestMessage")
         viewModel.sendMyMessage(message.text)
-        assertEquals(message, viewModel.chatState.value.messages.first())
+        viewModel.chatState.test {
+            assertEquals(awaitItem().messages, listOf(message))
+        }
     }
 
     @Test
@@ -49,9 +52,11 @@ class ChatViewModelTest {
             }.joinAll()
         }
 
-        val resultMessages = viewModel.chatState.value.messages
-        assertEquals(MESSAGE_COUNT, resultMessages.size)
-        assertEquals(messagesToSend, resultMessages)
+        viewModel.chatState.test {
+            val awaitMessages = awaitItem().messages
+            assertEquals(MESSAGE_COUNT, awaitMessages.size)
+            assertEquals(messagesToSend, awaitMessages)
+        }
     }
 
     private companion object {
